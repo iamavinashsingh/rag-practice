@@ -3,19 +3,17 @@ dotenv.config();
 import OpenAI from 'openai';
 import readlineSync from 'readline-sync';
 
-// 1. Initialize OpenAI Client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, 
 });
 
-// 2. Your Local Function
 const getCurrentTime = (timezone) =>{
     const date = new Date();
     const options = { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' };
     return date.toLocaleTimeString('en-US', options);
 };
 
-// 3. OpenAI's Strict Tool Format
+
 const tools = [
     {
         type: "function",
@@ -38,13 +36,12 @@ const tools = [
     }
 ];
 
-// Map string names to actual functions
+
 const toolsFunctions = {
     "getCurrentTime": getCurrentTime,
 };
 
-// 4. OpenAI History Format (Role and Content)
-// We put Babu Rao's instructions in the 'system' role so he never forgets them.
+
 const History = [
     {
         role: "system",
@@ -57,7 +54,7 @@ async function runAgent() {
     while (true) {
         // A. Send the current history to OpenAI
         const response = await client.chat.completions.create({
-            model: 'gpt-4o-mini', // Using standard OpenAI model naming
+            model: 'gpt-5.2', // Using standard OpenAI model naming
             messages: History,
             tools: tools,
         });
@@ -66,7 +63,7 @@ async function runAgent() {
 
         // B. Check if OpenAI wants to use a Tool
         if (responseMessage.tool_calls) {
-            console.log("⚙️ AI requested a tool... fetching it locally!");
+            console.log("My function called  locally!");
             
             // CRITICAL STEP: We MUST save the AI's tool request to history first
             History.push(responseMessage); 
@@ -97,7 +94,7 @@ async function runAgent() {
                 role: 'assistant',
                 content: responseMessage.content
             });
-            console.log("\nBabu Rao says:", responseMessage.content);
+            console.log("\nLLM:", responseMessage.content);
             break; // Stop the inner loop so the user can type again
         }
     }
